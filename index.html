@@ -3,351 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberCrypt: Online Empire 2026</title>
+    <title>CyberCrypt: Online Empire</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;500;800&display=swap');
-
         :root {
-            --neon: #00f2ff;
-            --accent: #ff00ff;
-            --bg: #050505;
-            --cheat-color: #ff0000;
+            --neon-cyan: #00f2ff;
+            --neon-magenta: #ff00ff;
+            --bg-dark: #050505;
+            --panel-bg: rgba(10, 10, 10, 0.9);
         }
 
         body {
-            font-family: 'JetBrains Mono', monospace;
-            background-color: var(--bg);
-            color: #fff; margin: 0; height: 100vh;
-            display: flex; overflow: hidden; transition: background 0.5s;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Боковая панель */
+        .sidebar {
+            width: 70px;
+            background: black;
+            border-right: 2px solid var(--neon-cyan);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            gap: 30px;
+            z-index: 10;
+        }
+
+        .nav-icon {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            filter: grayscale(1);
+            transition: 0.3s;
+        }
+
+        .nav-icon:hover, .nav-icon.active {
+            filter: grayscale(0) drop-shadow(0 0 5px var(--neon-cyan));
+        }
+
+        /* Главный экран */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .stats-bar {
+            position: absolute;
+            top: 20px;
+            width: 80%;
+            padding: 15px;
+            background: var(--panel-bg);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+        }
+
+        .click-area {
+            cursor: pointer;
+            transition: transform 0.1s;
+            user-select: none;
+        }
+
+        .click-area:active {
+            transform: scale(0.95);
+        }
+
+        .main-icon {
+            width: 200px;
+            height: 200px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px var(--neon-magenta);
+        }
+
+        .logs-panel {
+            margin-top: 40px;
+            width: 300px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .btn-wipe {
+            margin-top: 15px;
+            background: transparent;
+            border: 1px solid #f00;
+            color: #f00;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.7em;
         }
 
         /* Окно входа */
         #auth-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: flex; justify-content: center; align-items: center;
-            z-index: 5000;
-        }
-        .auth-box {
-            background: #111; padding: 40px; border: 2px solid var(--neon);
-            text-align: center; box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
-        }
-        .auth-input {
-            background: #000; border: 1px solid var(--neon); color: var(--neon);
-            padding: 10px; margin: 20px; font-family: 'JetBrains Mono'; text-align: center;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .sidebar {
-            width: 80px; background: rgba(0,0,0,0.9); border-right: 2px solid var(--neon);
-            display: flex; flex-direction: column; align-items: center; padding-top: 25px; z-index: 100;
+        .auth-card {
+            background: #111;
+            padding: 40px;
+            border: 2px solid var(--neon-cyan);
+            text-align: center;
+            border-radius: 20px;
         }
 
-        .tab-btn {
-            background: none; border: none; color: var(--neon); font-size: 32px;
-            margin-bottom: 30px; cursor: pointer; transition: 0.3s; opacity: 0.3;
+        input {
+            background: #000;
+            border: 1px solid var(--neon-cyan);
+            color: white;
+            padding: 10px;
+            margin: 20px 0;
+            width: 200px;
+            text-align: center;
         }
-        .tab-btn.active { opacity: 1; filter: drop-shadow(0 0 10px var(--neon)); transform: scale(1.2); }
-
-        .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
-
-        .top-bar {
-            margin-top: 20px; width: 85%; background: rgba(20,20,30,0.7);
-            padding: 20px; border-radius: 12px; border: 1px solid var(--neon);
-            display: flex; justify-content: space-between; backdrop-filter: blur(15px);
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
-        }
-
-        .crypto-val { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: 22px; text-shadow: 0 0 10px var(--neon); }
-        .rank-val { font-family: 'Orbitron'; font-size: 11px; letter-spacing: 2px; color: #aaa; }
-
-        .content { width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto; padding: 40px; }
-        .content.active { display: flex; animation: fadeIn 0.4s ease; }
-
-        #city { font-size: 160px; cursor: pointer; user-select: none; transition: 0.1s; filter: drop-shadow(0 0 30px var(--accent)); position: relative; }
-        #city:active { transform: scale(0.85); }
-
-        .shop-list { width: 100%; max-width: 500px; display: grid; gap: 12px; }
-        .shop-item { 
-            background: rgba(255,255,255,0.05); padding: 18px; border-radius: 10px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-left: 4px solid var(--neon); transition: 0.2s;
-        }
-
-        #cheat-menu {
-            position: fixed; bottom: 20px; right: 20px; width: 360px;
-            background: #000; border: 2px solid var(--cheat-color); border-radius: 12px;
-            display: none; flex-direction: column; z-index: 1000;
-            box-shadow: 0 0 50px var(--cheat-color); transform: translateY(150%); transition: 0.5s;
-        }
-        #cheat-menu.open { transform: translateY(0); }
-        .cheat-header { background: var(--cheat-color); color: #000; padding: 12px; font-weight: 900; font-size: 12px; display: flex; justify-content: space-between; font-family: 'Orbitron'; }
-        .cheat-tabs { display: flex; background: #111; }
-        .c-tab { padding: 12px; border: none; background: none; color: #666; cursor: pointer; flex: 1; }
-        .c-tab.active { color: var(--cheat-color); border-bottom: 2px solid var(--cheat-color); }
-        .cheat-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto; }
-
-        .btn {
-            background: rgba(0, 242, 255, 0.05); border: 1px solid var(--neon);
-            color: var(--neon); padding: 14px; cursor: pointer; border-radius: 6px;
-            font-family: 'Orbitron'; font-size: 11px; transition: 0.3s;
-        }
-        .btn:hover:not(:disabled) { background: var(--neon); color: #000; }
-        .btn:disabled { opacity: 0.3; }
-
-        .log-box { background: #000; padding: 25px; border: 1px solid #333; width: 100%; max-width: 450px; border-radius: 12px; }
-        .log-row { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 12px 0; }
-        
-        #gear { position: fixed; top: 25px; right: 25px; font-size: 40px; cursor: pointer; display: none; z-index: 1001; }
-        #bsod { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0000aa; color: white; padding: 60px; display: none; z-index: 9999; }
     </style>
 </head>
 <body>
 
     <div id="auth-overlay">
-        <div class="auth-box">
-            <h1 style="font-family:'Orbitron'; color:var(--neon)">SYSTEM ACCESS</h1>
-            <p>Введите ваш позывной:</p>
-            <input type="text" id="username-input" class="auth-input" placeholder="ID...">
+        <div class="auth-card">
+            <h2>SYSTEM ACCESS</h2>
+            <input type="text" id="username-input" placeholder="ENTER ID...">
             <br>
-            <button class="btn" onclick="startApp()">ПОДКЛЮЧИТЬСЯ</button>
+            <button onclick="login()" style="background: var(--neon-cyan); border: none; padding: 10px 20px; cursor: pointer;">ПОДКЛЮЧИТЬСЯ</button>
         </div>
     </div>
-
-    <div id="bsod">
-        <h1 style="font-size: 120px;">:(</h1>
-        <h2>На вашем устройстве возникла проблема.</h2>
-        <p>CRYPT_OVERFLOW_FATAL</p>
-        <button class="btn" onclick="document.getElementById('bsod').style.display='none'" style="background:white; color:blue">ПЕРЕЗАГРУЗИТЬ</button>
-    </div>
-
-    <div id="gear" onclick="toggleCheat()">⚙️</div>
 
     <div class="sidebar">
-        <button class="tab-btn active" onclick="switchTab('game', event)">🏙️</button>
-        <button class="tab-btn" onclick="switchTab('shop', event)">🛒</button>
-        <button class="tab-btn" onclick="switchTab('visual', event)">🎨</button>
-        <button class="tab-btn" onclick="switchTab('codes', event)">⌨️</button>
-        <button class="tab-btn" onclick="switchTab('stats', event)">📈</button>
+        <img src="https://cdn-icons-png.flaticon.com/512/606/606161.png" class="nav-icon" title="Город">
+        <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" class="nav-icon" title="Магазин">
+        <img src="https://cdn-icons-png.flaticon.com/512/3588/3588204.png" class="nav-icon" title="Кастомизация">
+        <img src="https://cdn-icons-png.flaticon.com/512/2920/2920618.png" class="nav-icon active" title="Статистика">
     </div>
 
-    <div class="main">
-        <div class="top-bar">
-            <div><span class="crypto-val" id="m-ui">0</span> <span style="font-size:12px; color: #666;">₿</span></div>
-            <div class="rank-val" id="r-ui">ID: ---</div>
+    <div class="main-content">
+        <div class="stats-bar">
+            <div><img src="https://cdn-icons-png.flaticon.com/512/2091/2091665.png" width="20" style="vertical-align: middle;"> <span id="balance-display">0</span> ₿</div>
+            <div style="font-size: 0.8em; color: #888;">ID: <span id="player-id">---</span></div>
         </div>
 
-        <div id="game" class="content active">
-            <div id="city">🏙️</div>
-            <p style="color: var(--neon); margin-top: 40px;">SPEED: <span id="dps-ui">0</span> ₿/s</p>
+        <div class="click-area" onclick="handleMainClick()">
+            <img src="https://cdn-icons-png.flaticon.com/512/2091/2091665.png" class="main-icon" id="main-target">
         </div>
 
-        <div id="shop" class="content">
-            <h2 style="font-family:'Orbitron'; color: var(--accent);">DARKNET MARKET</h2>
-            <div class="shop-list" id="shop-container"></div>
-        </div>
-
-        <div id="visual" class="content">
-            <h2 style="font-family:'Orbitron';">THEMES</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px;">
-                <button class="btn" onclick="setT('#050505', '#00f2ff', '🏙️')">CYBER</button>
-                <button class="btn" onclick="setT('#101010', '#ffffff', '🔳')">MONO</button>
-                <button class="btn" onclick="setT('#001500', '#00ff44', '🌲')">MATRIX</button>
-                <button class="btn" onclick="setT('#150000', '#ff0000', '🌋')">INFERNO</button>
+        <div class="logs-panel">
+            <h3 style="font-size: 0.9em; margin-bottom: 15px;">SYSTEM LOGS</h3>
+            <div style="display: flex; justify-content: space-between; font-family: 'Roboto Mono'; font-size: 0.8em;">
+                <span>CLICKS</span>
+                <span id="clicks-session">0</span>
             </div>
-        </div>
-
-        <div id="codes" class="content">
-            <h2 style="font-family:'Orbitron';">EXPLOITS</h2>
-            <input type="text" id="t-input" class="auth-input" placeholder="CODE...">
-            <button class="btn" style="width: 200px;" onclick="runCode()">INJECT</button>
-        </div>
-
-        <div id="stats" class="content">
-            <h2 style="font-family:'Orbitron';">SYSTEM LOGS</h2>
-            <div class="log-box">
-                <div class="log-row"><span>TIME</span><span id="s-time">0</span>s</div>
-                <div class="log-row"><span>CLICKS</span><span id="s-clicks">0</span></div>
-                <div class="log-row"><span>TOTAL</span><span id="s-total">0</span></div>
-            </div>
-            <button class="btn" style="border-color:red; color:red; margin-top:20px" onclick="wipe()">WIPE ALL DATA</button>
+            <button class="btn-wipe" onclick="wipeData()">WIPE ALL DATA</button>
         </div>
     </div>
 
-    <div id="cheat-menu">
-        <div class="cheat-header"><span>ADMIN_PANEL</span><span onclick="toggleCheat()">[X]</span></div>
-        <div class="cheat-tabs">
-            <button class="c-tab active" onclick="ctab('c-res', event)">RES</button>
-            <button class="c-tab" onclick="ctab('c-chaos', event)">CHAOS</button>
-        </div>
-        <div id="c-res" class="cheat-body">
-            <button class="btn" onclick="game.money += 1000000; saveToCloud();">+1M ₿</button>
-            <button class="btn" onclick="game.god = !game.god; this.innerText='GOD: '+(game.god?'ON':'OFF')">GOD MODE</button>
-        </div>
-        <div id="c-chaos" class="cheat-body" style="display:none">
-            <button class="btn" onclick="document.getElementById('bsod').style.display='block'">BSOD</button>
-            <button class="btn" onclick="game.gravity = !game.gravity">GRAVITY</button>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
+    <script>
+        // --- КОНФИГУРАЦИЯ FIREBASE ---
         const firebaseConfig = {
-            apiKey: "AIzaSyA3J2Xe_TptizbnYr7rSr_fq8uvtT1Vgs0",
+            apiKey: "AIzaSyA3J2Xe_TptizbnYr7rSr_fQbuvtT1Vgs0",
             authDomain: "cybercrypt-online-de357.firebaseapp.com",
             projectId: "cybercrypt-online-de357",
-            storageBucket: "cybercrypt-online-de357.firebasestorage.app",
+            storageBucket: "cybercrypt-online-de357.appspot.com",
+            databaseURL: "https://cybercrypt-online-de357-default-rtdb.firebaseio.com",
             messagingSenderId: "903069840701",
             appId: "1:903069840701:web:1c64e03b93addc1987c154",
             measurementId: "G-LJ9XKE9SGF"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        // Инициализация
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        window.game = {
-            money: 0, total: 0, spent: 0, clicks: 0, time: 0, power: 1,
-            cheat: false, god: false, gravity: false,
-            items: [
-                { id: 0, name: "Видюха с Авито", cost: 15, power: 1, type: "click", count: 0 },
-                { id: 1, name: "Ботнет-ферма", cost: 120, power: 8, type: "auto", count: 0 },
-                { id: 2, name: "Квантовое ядро", cost: 3000, power: 65, type: "auto", count: 0 },
-                { id: 3, name: "Спутник связи", cost: 60000, power: 550, type: "auto", count: 0 },
-                { id: 4, name: "Мета-Вселенная", cost: 1000000, power: 12000, type: "auto", count: 0 }
-            ],
-            theme: { bg: '#050505', neon: '#00f2ff', icon: '🏙️' }
-        };
+        let currentUser = "";
+        let balance = 0;
+        let sessionClicks = 0;
 
-        let currentUserId = "";
-
-        window.startApp = function() {
-            const name = document.getElementById('username-input').value.trim();
-            if(!name) return alert("Введите ID!");
-            currentUserId = name;
-            document.getElementById('auth-overlay').style.display = 'none';
-
-            const userRef = ref(db, 'users/' + currentUserId);
-            onValue(userRef, (snapshot) => {
-                const data = snapshot.val();
-                if(data) {
-                    window.game = data;
-                    if(game.cheat) document.getElementById('gear').style.display = 'block';
-                    setT(game.theme.bg, game.theme.neon, game.theme.icon);
-                }
-                updateUI();
-            });
-        };
-
-        window.switchTab = function(id, e) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            e.currentTarget.classList.add('active');
-            if(id === 'shop') renderShop();
-        };
-
-        document.getElementById('city').addEventListener('mousedown', () => {
-            if(!currentUserId) return;
-            let gain = game.power;
-            game.money += gain; game.total += gain; game.clicks++;
-            updateUI();
-            saveToCloud();
-        });
-
-        window.renderShop = function() {
-            const container = document.getElementById('shop-container');
-            container.innerHTML = '';
-            game.items.forEach(u => {
-                const card = document.createElement('div');
-                card.className = 'shop-item';
-                card.innerHTML = `
-                    <div><b>${u.name}</b><br><small>Ур.${u.count}</small></div>
-                    <button class="btn" onclick="buy(${u.id})" ${game.money < u.cost && !game.god ? 'disabled' : ''}>${Math.floor(u.cost)} ₿</button>
-                `;
-                container.appendChild(card);
-            });
-        };
-
-        window.buy = function(id) {
-            const u = game.items[id];
-            if(game.money >= u.cost || game.god) {
-                if(!game.god) { game.money -= u.cost; game.spent += u.cost; }
-                u.count++;
-                if(u.type === 'click') game.power += u.power;
-                u.cost *= 1.48;
-                renderShop(); updateUI(); saveToCloud();
-            }
-        };
-
-        window.updateUI = function() {
-            document.getElementById('m-ui').innerText = Math.floor(game.money).toLocaleString();
-            document.getElementById('s-total').innerText = Math.floor(game.total).toLocaleString();
-            document.getElementById('s-clicks').innerText = game.clicks;
-            document.getElementById('s-time').innerText = game.time;
-            document.getElementById('r-ui').innerText = "ID: " + currentUserId;
+        // Функция входа
+        function login() {
+            const input = document.getElementById('username-input').value.trim();
+            if (input.length < 2) return alert("ID слишком короткий!");
             
-            let dps = game.items.filter(i => i.type === 'auto').reduce((s, i) => s + (i.count * i.power), 0);
-            document.getElementById('dps-ui').innerText = dps.toLocaleString();
+            currentUser = input;
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('player-id').innerText = currentUser;
 
-            if(game.gravity) {
-                document.getElementById('city').style.transform = `translateY(${Math.sin(Date.now()/300)*60}px) rotate(${Date.now()/50}deg)`;
-            } else {
-                document.getElementById('city').style.transform = '';
-            }
-        };
+            // Загрузка данных из Firebase
+            const userRef = database.ref('users/' + currentUser);
+            userRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    balance = data.balance || 0;
+                    updateUI();
+                } else {
+                    // Если игрока нет — создаем его
+                    saveData();
+                }
+            });
+        }
 
-        window.runCode = function() {
-            if(document.getElementById('t-input').value.toLowerCase() === 'godmode') {
-                game.cheat = true;
-                document.getElementById('gear').style.display = 'block';
-                toggleCheat();
-                saveToCloud();
-            }
-            document.getElementById('t-input').value = '';
-        };
+        function handleMainClick() {
+            if (!currentUser) return;
+            balance += 1;
+            sessionClicks += 1;
+            updateUI();
+            saveData();
+        }
 
-        window.toggleCheat = function() {
-            const p = document.getElementById('cheat-menu');
-            p.style.display = p.style.display === 'flex' ? 'none' : 'flex';
-            p.classList.toggle('open');
-        };
+        function updateUI() {
+            document.getElementById('balance-display').innerText = balance;
+            document.getElementById('clicks-session').innerText = sessionClicks;
+        }
 
-        window.setT = function(bg, neon, icon) {
-            game.theme = { bg, neon, icon };
-            document.body.style.backgroundColor = bg;
-            document.documentElement.style.setProperty('--neon', neon);
-            document.getElementById('city').innerText = icon;
-            saveToCloud();
-        };
+        function saveData() {
+            if (!currentUser) return;
+            database.ref('users/' + currentUser).set({
+                balance: balance,
+                lastUpdate: Date.now()
+            });
+        }
 
-        window.saveToCloud = function() {
-            if(currentUserId) set(ref(db, 'users/' + currentUserId), game);
-        };
-
-        window.wipe = function() {
-            if(confirm("УНИЧТОЖИТЬ ВСЁ?")) {
-                set(ref(db, 'users/' + currentUserId), null);
+        function wipeData() {
+            if (confirm("УНИЧТОЖИТЬ ВСЕ ДАННЫЕ?")) {
+                balance = 0;
+                sessionClicks = 0;
+                saveData();
+                updateUI();
+                localStorage.clear();
                 location.reload();
             }
-        };
-
-        setInterval(() => {
-            if(!currentUserId) return;
-            game.time++;
-            let dps = game.items.filter(i => i.type === 'auto').reduce((s, i) => s + (i.count * i.power), 0);
-            if(dps > 0) {
-                game.money += dps / 10;
-                game.total += dps / 10;
-            }
-            updateUI();
-        }, 100);
-
-        window.ctab = function(id, e) {
-            document.querySelectorAll('.cheat-body').forEach(b => b.style.display = 'none');
-            document.getElementById(id).style.display = 'flex';
-        };
+        }
     </script>
 </body>
 </html>
