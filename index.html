@@ -3,186 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberCrypt: Online Empire</title>
+    <title>Cozy Empire: Deluxe</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --neon-cyan: #00f2ff;
-            --neon-magenta: #ff00ff;
-            --bg-dark: #050505;
-            --panel-bg: rgba(10, 10, 10, 0.9);
+            --accent: #ffb7c5; --bg: #fff5f7; --text: #5d4037; --panel: #ffffff;
+        }
+        .theme-dark {
+            --accent: #bb86fc; --bg: #121212; --text: #e0e0e0; --panel: #1e1e1e;
+        }
+        .theme-coffee {
+            --accent: #a67c52; --bg: #fdf5e6; --text: #4b3621; --panel: #fffaf0;
         }
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-dark);
-            color: white;
-            font-family: 'Orbitron', sans-serif;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+        body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Comfortaa', cursive; display: flex; height: 100vh; transition: 0.5s; }
 
-        /* Боковая панель */
-        .sidebar {
-            width: 70px;
-            background: black;
-            border-right: 2px solid var(--neon-cyan);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 20px;
-            gap: 30px;
-            z-index: 10;
-        }
+        /* Сайдбар */
+        .sidebar { width: 80px; background: var(--panel); border-right: 3px solid var(--accent); display: flex; flex-direction: column; align-items: center; padding-top: 30px; gap: 20px; box-shadow: 4px 0 10px rgba(0,0,0,0.05); }
+        .nav-icon { width: 40px; height: 40px; cursor: pointer; transition: 0.3s; filter: opacity(0.5); }
+        .nav-icon:hover { filter: opacity(1); transform: scale(1.1); }
 
-        .nav-icon {
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            filter: grayscale(1);
-            transition: 0.3s;
-        }
+        /* Основная часть */
+        .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        
+        .header { position: absolute; top: 20px; width: 90%; display: flex; justify-content: space-between; align-items: center; }
+        .stats { background: var(--panel); padding: 10px 25px; border-radius: 30px; border: 2px solid var(--accent); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-        .nav-icon:hover, .nav-icon.active {
-            filter: grayscale(0) drop-shadow(0 0 5px var(--neon-cyan));
-        }
+        .target { width: 200px; height: 200px; cursor: pointer; transition: 0.1s; user-select: none; }
+        .target:active { transform: scale(0.9); }
 
-        /* Главный экран */
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
+        /* Панели */
+        .log-box { position: absolute; bottom: 20px; left: 100px; background: var(--panel); padding: 10px; border-radius: 15px; border: 1px solid var(--accent); font-size: 0.7em; width: 200px; height: 80px; overflow-y: auto; }
+        
+        #cheat-menu { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel); padding: 30px; border-radius: 20px; border: 4px solid var(--accent); z-index: 2000; text-align: center; }
 
-        .stats-bar {
-            position: absolute;
-            top: 20px;
-            width: 80%;
-            padding: 15px;
-            background: var(--panel-bg);
-            border: 1px solid var(--neon-cyan);
-            border-radius: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
-        }
-
-        .click-area {
-            cursor: pointer;
-            transition: transform 0.1s;
-            user-select: none;
-        }
-
-        .click-area:active {
-            transform: scale(0.95);
-        }
-
-        .main-icon {
-            width: 200px;
-            height: 200px;
-            border-radius: 20px;
-            box-shadow: 0 0 30px var(--neon-magenta);
-        }
-
-        .logs-panel {
-            margin-top: 40px;
-            width: 300px;
-            background: rgba(0,0,0,0.8);
-            border: 1px solid #333;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .btn-wipe {
-            margin-top: 15px;
-            background: transparent;
-            border: 1px solid #f00;
-            color: #f00;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 0.7em;
-        }
-
-        /* Окно входа */
-        #auth-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .auth-card {
-            background: #111;
-            padding: 40px;
-            border: 2px solid var(--neon-cyan);
-            text-align: center;
-            border-radius: 20px;
-        }
-
-        input {
-            background: #000;
-            border: 1px solid var(--neon-cyan);
-            color: white;
-            padding: 10px;
-            margin: 20px 0;
-            width: 200px;
-            text-align: center;
-        }
+        .btn { background: var(--accent); border: none; color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; margin: 5px; font-family: inherit; }
+        
+        #auth { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 3000; }
     </style>
 </head>
-<body>
+<body class="theme-main">
 
-    <div id="auth-overlay">
-        <div class="auth-card">
-            <h2>SYSTEM ACCESS</h2>
-            <input type="text" id="username-input" placeholder="ENTER ID...">
-            <br>
-            <button onclick="login()" style="background: var(--neon-cyan); border: none; padding: 10px 20px; cursor: pointer;">ПОДКЛЮЧИТЬСЯ</button>
+    <div id="auth">
+        <div style="background: white; padding: 40px; border-radius: 30px; border: 3px solid var(--accent); text-align: center;">
+            <h2 style="color: var(--accent)">Cozy Access</h2>
+            <input type="text" id="nick" placeholder="Твой ник..." style="padding: 10px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 15px;"><br>
+            <button class="btn" onclick="login()">ВОЙТИ</button>
         </div>
+    </div>
+
+    <div id="cheat-menu">
+        <h3>🔧 DEVELOPER MENU</h3>
+        <button class="btn" onclick="addMoney(10000)">+10k Очков</button>
+        <button class="btn" onclick="addMoney(-10000)">-10k Очков</button><br>
+        <button class="btn" onclick="wipeData()" style="background: #ff4d4d;">СБРОС БАЗЫ</button><br>
+        <button class="btn" onclick="closeCheat()" style="background: #999;">Закрыть</button>
     </div>
 
     <div class="sidebar">
-        <img src="https://cdn-icons-png.flaticon.com/512/606/606161.png" class="nav-icon" title="Город">
-        <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" class="nav-icon" title="Магазин">
-        <img src="https://cdn-icons-png.flaticon.com/512/3588/3588204.png" class="nav-icon" title="Кастомизация">
-        <img src="https://cdn-icons-png.flaticon.com/512/2920/2920618.png" class="nav-icon active" title="Статистика">
+        <img src="https://cdn-icons-png.flaticon.com/512/3081/3081031.png" class="nav-icon" onclick="alert('Вы на главной')">
+        <img src="https://cdn-icons-png.flaticon.com/512/3588/3588204.png" class="nav-icon" onclick="nextTheme()" title="Сменить тему">
+        <img src="https://cdn-icons-png.flaticon.com/512/2920/2920618.png" class="nav-icon" onclick="alert('Магазин в разработке')">
     </div>
 
-    <div class="main-content">
-        <div class="stats-bar">
-            <div><img src="https://cdn-icons-png.flaticon.com/512/2091/2091665.png" width="20" style="vertical-align: middle;"> <span id="balance-display">0</span> ₿</div>
-            <div style="font-size: 0.8em; color: #888;">ID: <span id="player-id">---</span></div>
+    <div class="main">
+        <div class="header">
+            <div class="stats">✨ <span id="disp-bal">0</span> | Ранг: <span id="disp-rank">Новичок</span></div>
+            <div style="cursor: pointer; opacity: 0.5;" onclick="openCheat()">ID: <span id="disp-id">---</span></div>
         </div>
 
-        <div class="click-area" onclick="handleMainClick()">
-            <img src="https://cdn-icons-png.flaticon.com/512/2091/2091665.png" class="main-icon" id="main-target">
-        </div>
+        <img src="https://cdn-icons-png.flaticon.com/512/924/924514.png" class="target" onclick="doClick()">
 
-        <div class="logs-panel">
-            <h3 style="font-size: 0.9em; margin-bottom: 15px;">SYSTEM LOGS</h3>
-            <div style="display: flex; justify-content: space-between; font-family: 'Roboto Mono'; font-size: 0.8em;">
-                <span>CLICKS</span>
-                <span id="clicks-session">0</span>
-            </div>
-            <button class="btn-wipe" onclick="wipeData()">WIPE ALL DATA</button>
+        <div class="log-box" id="logs">
+            <div>[System] Ожидание входа...</div>
         </div>
     </div>
 
     <script>
-        // --- КОНФИГУРАЦИЯ FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyA3J2Xe_TptizbnYr7rSr_fQbuvtT1Vgs0",
             authDomain: "cybercrypt-online-de357.firebaseapp.com",
@@ -190,71 +89,76 @@
             storageBucket: "cybercrypt-online-de357.appspot.com",
             databaseURL: "https://cybercrypt-online-de357-default-rtdb.firebaseio.com",
             messagingSenderId: "903069840701",
-            appId: "1:903069840701:web:1c64e03b93addc1987c154",
-            measurementId: "G-LJ9XKE9SGF"
+            appId: "1:903069840701:web:1c64e03b93addc1987c154"
         };
 
-        // Инициализация
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const db = firebase.database();
 
-        let currentUser = "";
+        let user = "";
         let balance = 0;
-        let sessionClicks = 0;
+        let themes = ["theme-main", "theme-coffee", "theme-dark"];
+        let currentThemeIdx = 0;
 
-        // Функция входа
         function login() {
-            const input = document.getElementById('username-input').value.trim();
-            if (input.length < 2) return alert("ID слишком короткий!");
+            user = document.getElementById('nick').value.trim();
+            if(user.length < 2) return;
+            document.getElementById('auth').style.display = 'none';
+            document.getElementById('disp-id').innerText = user;
+            addLog("Пользователь " + user + " подключен");
             
-            currentUser = input;
-            document.getElementById('auth-overlay').style.display = 'none';
-            document.getElementById('player-id').innerText = currentUser;
-
-            // Загрузка данных из Firebase
-            const userRef = database.ref('users/' + currentUser);
-            userRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
+            db.ref('users/' + user).on('value', (snap) => {
+                const data = snap.val();
+                if(data) {
                     balance = data.balance || 0;
                     updateUI();
-                } else {
-                    // Если игрока нет — создаем его
-                    saveData();
-                }
+                } else { saveData(); }
             });
         }
 
-        function handleMainClick() {
-            if (!currentUser) return;
-            balance += 1;
-            sessionClicks += 1;
+        function doClick() {
+            balance++;
+            addLog("Клик! +1 к уюту");
             updateUI();
             saveData();
         }
 
         function updateUI() {
-            document.getElementById('balance-display').innerText = balance;
-            document.getElementById('clicks-session').innerText = sessionClicks;
+            document.getElementById('disp-bal').innerText = balance;
+            let rank = "Новичок";
+            if(balance > 100) rank = "Любитель";
+            if(balance > 1000) rank = "Мастер уюта";
+            if(balance > 5000) rank = "Легенда";
+            document.getElementById('disp-rank').innerText = rank;
         }
 
         function saveData() {
-            if (!currentUser) return;
-            database.ref('users/' + currentUser).set({
+            if(!user) return;
+            db.ref('users/' + user).update({
                 balance: balance,
-                lastUpdate: Date.now()
+                rank: document.getElementById('disp-rank').innerText,
+                lastActive: Date.now()
             });
         }
 
-        function wipeData() {
-            if (confirm("УНИЧТОЖИТЬ ВСЕ ДАННЫЕ?")) {
-                balance = 0;
-                sessionClicks = 0;
-                saveData();
-                updateUI();
-                localStorage.clear();
-                location.reload();
-            }
+        function addLog(msg) {
+            const l = document.getElementById('logs');
+            l.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            l.scrollTop = l.scrollHeight;
+        }
+
+        // ЧИТЫ
+        function openCheat() { document.getElementById('cheat-menu').style.display = 'block'; }
+        function closeCheat() { document.getElementById('cheat-menu').style.display = 'none'; }
+        function addMoney(amt) { balance += amt; updateUI(); saveData(); addLog("Чит: баланс изменен на " + amt); }
+        function wipeData() { if(confirm("Удалить всё?")) { db.ref('users/' + user).remove(); location.reload(); } }
+
+        // ТЕМЫ
+        function nextTheme() {
+            document.body.classList.remove(themes[currentThemeIdx]);
+            currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+            document.body.classList.add(themes[currentThemeIdx]);
+            addLog("Тема изменена");
         }
     </script>
 </body>
