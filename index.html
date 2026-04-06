@@ -3,81 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cozy Empire: Deluxe</title>
+    <title>Cozy Cat Empire</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #ffb7c5; --bg: #fff5f7; --text: #5d4037; --panel: #ffffff;
+            --cat-img: url('https://cdn-icons-png.flaticon.com/512/616/616430.png');
         }
         .theme-dark {
-            --accent: #bb86fc; --bg: #121212; --text: #e0e0e0; --panel: #1e1e1e;
+            --accent: #bb86fc; --bg: #1a1a1a; --text: #e0e0e0; --panel: #2d2d2d;
         }
         .theme-coffee {
             --accent: #a67c52; --bg: #fdf5e6; --text: #4b3621; --panel: #fffaf0;
         }
 
-        body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Comfortaa', cursive; display: flex; height: 100vh; transition: 0.5s; }
+        body { 
+            margin: 0; padding: 0; background: var(--bg); color: var(--text); 
+            font-family: 'Comfortaa', cursive; display: flex; height: 100vh; transition: 0.5s; 
+            background-image: var(--cat-img); background-size: 150px; background-repeat: no-repeat;
+            background-position: bottom right; background-attachment: fixed; /* Котик на заднем плане */
+        }
 
-        /* Сайдбар */
-        .sidebar { width: 80px; background: var(--panel); border-right: 3px solid var(--accent); display: flex; flex-direction: column; align-items: center; padding-top: 30px; gap: 20px; box-shadow: 4px 0 10px rgba(0,0,0,0.05); }
-        .nav-icon { width: 40px; height: 40px; cursor: pointer; transition: 0.3s; filter: opacity(0.5); }
+        .sidebar { width: 80px; background: var(--panel); border-right: 3px solid var(--accent); display: flex; flex-direction: column; align-items: center; padding-top: 30px; gap: 20px; box-shadow: 4px 0 10px rgba(0,0,0,0.05); z-index: 10; }
+        .nav-icon { width: 45px; height: 45px; cursor: pointer; transition: 0.3s; filter: opacity(0.6); }
         .nav-icon:hover { filter: opacity(1); transform: scale(1.1); }
 
-        /* Основная часть */
         .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         
         .header { position: absolute; top: 20px; width: 90%; display: flex; justify-content: space-between; align-items: center; }
-        .stats { background: var(--panel); padding: 10px 25px; border-radius: 30px; border: 2px solid var(--accent); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .stats { background: var(--panel); padding: 10px 25px; border-radius: 30px; border: 2px solid var(--accent); }
 
-        .target { width: 200px; height: 200px; cursor: pointer; transition: 0.1s; user-select: none; }
-        .target:active { transform: scale(0.9); }
+        /* Главный котик вместо кофе */
+        .target { width: 220px; height: 220px; cursor: pointer; transition: 0.1s; user-select: none; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1)); }
+        .target:active { transform: scale(0.85); }
 
-        /* Панели */
-        .log-box { position: absolute; bottom: 20px; left: 100px; background: var(--panel); padding: 10px; border-radius: 15px; border: 1px solid var(--accent); font-size: 0.7em; width: 200px; height: 80px; overflow-y: auto; }
-        
-        #cheat-menu { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel); padding: 30px; border-radius: 20px; border: 4px solid var(--accent); z-index: 2000; text-align: center; }
+        /* Магазин */
+        #shop-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel); padding: 30px; border-radius: 30px; border: 3px solid var(--accent); z-index: 2000; width: 300px; text-align: center; }
+        .shop-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
 
-        .btn { background: var(--accent); border: none; color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; margin: 5px; font-family: inherit; }
-        
-        #auth { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 3000; }
+        /* Чит-меню */
+        #cheat-menu { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel); padding: 30px; border-radius: 30px; border: 5px solid #ff4d4d; z-index: 3000; text-align: center; }
+
+        .log-box { position: absolute; bottom: 20px; left: 100px; background: rgba(255,255,255,0.7); padding: 10px; border-radius: 15px; border: 1px solid var(--accent); font-size: 0.7em; width: 220px; height: 90px; overflow-y: auto; }
+        .btn { background: var(--accent); border: none; color: white; padding: 8px 15px; border-radius: 12px; cursor: pointer; margin: 5px; font-family: inherit; font-weight: bold; }
+        #auth { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 4000; }
     </style>
 </head>
 <body class="theme-main">
 
     <div id="auth">
-        <div style="background: white; padding: 40px; border-radius: 30px; border: 3px solid var(--accent); text-align: center;">
-            <h2 style="color: var(--accent)">Cozy Access</h2>
-            <input type="text" id="nick" placeholder="Твой ник..." style="padding: 10px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 15px;"><br>
-            <button class="btn" onclick="login()">ВОЙТИ</button>
+        <div style="background: white; padding: 40px; border-radius: 40px; border: 4px solid var(--accent); text-align: center;">
+            <h2 style="color: var(--accent)">Cat Empire Login</h2>
+            <input type="text" id="nick" placeholder="Имя владельца котика..." style="padding: 12px; border-radius: 15px; border: 2px solid #eee; margin-bottom: 20px; text-align: center;"><br>
+            <button class="btn" onclick="login()">ВОЙТИ В ИМПЕРИЮ</button>
         </div>
     </div>
 
+    <div id="shop-modal">
+        <h3 style="color: var(--accent)">Магазин котиков 🐾</h3>
+        <div class="shop-item">
+            <span>Кот-соня (+1/с)</span>
+            <button class="btn" onclick="buyCat(1, 20)">20 🐾</button>
+        </div>
+        <div class="shop-item">
+            <span>Кот-батон (+5/с)</span>
+            <button class="btn" onclick="buyCat(5, 100)">100 🐾</button>
+        </div>
+        <button class="btn" onclick="toggleShop()" style="background: #999; margin-top: 15px;">Закрыть</button>
+    </div>
+
     <div id="cheat-menu">
-        <h3>🔧 DEVELOPER MENU</h3>
-        <button class="btn" onclick="addMoney(10000)">+10k Очков</button>
-        <button class="btn" onclick="addMoney(-10000)">-10k Очков</button><br>
-        <button class="btn" onclick="wipeData()" style="background: #ff4d4d;">СБРОС БАЗЫ</button><br>
-        <button class="btn" onclick="closeCheat()" style="background: #999;">Закрыть</button>
+        <h3 style="color: #ff4d4d">🐾 CAT CHEATS 🐾</h3>
+        <button class="btn" onclick="addMoney(50000)">+50k Очков</button>
+        <button class="btn" onclick="setRank('Котик!')">Стать Котиком!</button>
+        <button class="btn" onclick="setRank('Шерстяной')">Ранг: Шерстяной</button><br>
+        <button class="btn" onclick="helpers += 100; updateUI(); saveData();">Призвать 100 котов</button><br>
+        <button class="btn" onclick="closeCheat()" style="background: #999;">Выйти из режима бога</button>
     </div>
 
     <div class="sidebar">
-        <img src="https://cdn-icons-png.flaticon.com/512/3081/3081031.png" class="nav-icon" onclick="alert('Вы на главной')">
+        <img src="https://cdn-icons-png.flaticon.com/512/616/616430.png" class="nav-icon" title="Главная" onclick="location.reload()">
         <img src="https://cdn-icons-png.flaticon.com/512/3588/3588204.png" class="nav-icon" onclick="nextTheme()" title="Сменить тему">
-        <img src="https://cdn-icons-png.flaticon.com/512/2920/2920618.png" class="nav-icon" onclick="alert('Магазин в разработке')">
+        <img src="https://cdn-icons-png.flaticon.com/512/107/107831.png" class="nav-icon" onclick="toggleShop()" title="Магазин">
     </div>
 
     <div class="main">
         <div class="header">
-            <div class="stats">✨ <span id="disp-bal">0</span> | Ранг: <span id="disp-rank">Новичок</span></div>
-            <div style="cursor: pointer; opacity: 0.5;" onclick="openCheat()">ID: <span id="disp-id">---</span></div>
+            <div class="stats">🐾 <span id="disp-bal">0</span> | <span id="disp-rank" style="font-weight: bold; color: var(--accent);">Котёнок</span></div>
+            <div style="cursor: pointer; opacity: 0.4;" onclick="openCheat()">Owner: <span id="disp-id">---</span></div>
         </div>
 
-        <img src="https://cdn-icons-png.flaticon.com/512/924/924514.png" class="target" onclick="doClick()">
+        <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" class="target" onclick="doClick()">
+        <div style="margin-top: 10px; font-size: 0.9em; opacity: 0.7;">Котов-помощников: <span id="disp-helpers">0</span></div>
 
         <div class="log-box" id="logs">
-            <div>[System] Ожидание входа...</div>
+            <div>[System] Мяу! Ожидаю входа...</div>
         </div>
     </div>
 
@@ -97,6 +119,8 @@
 
         let user = "";
         let balance = 0;
+        let helpers = 0;
+        let forcedRank = "";
         let themes = ["theme-main", "theme-coffee", "theme-dark"];
         let currentThemeIdx = 0;
 
@@ -105,12 +129,13 @@
             if(user.length < 2) return;
             document.getElementById('auth').style.display = 'none';
             document.getElementById('disp-id').innerText = user;
-            addLog("Пользователь " + user + " подключен");
             
             db.ref('users/' + user).on('value', (snap) => {
                 const data = snap.val();
                 if(data) {
                     balance = data.balance || 0;
+                    helpers = data.helpers || 0;
+                    forcedRank = data.rank || "";
                     updateUI();
                 } else { saveData(); }
             });
@@ -118,28 +143,53 @@
 
         function doClick() {
             balance++;
-            addLog("Клик! +1 к уюту");
+            addLog("Мур! +1 очко");
             updateUI();
             saveData();
         }
 
+        function buyCat(power, price) {
+            if(balance >= price) {
+                balance -= price;
+                helpers += power;
+                addLog("Новый котик нанят! +"+power+"/сек");
+                updateUI();
+                saveData();
+            } else { alert("Не хватает 🐾!"); }
+        }
+
         function updateUI() {
-            document.getElementById('disp-bal').innerText = balance;
-            let rank = "Новичок";
-            if(balance > 100) rank = "Любитель";
-            if(balance > 1000) rank = "Мастер уюта";
-            if(balance > 5000) rank = "Легенда";
-            document.getElementById('disp-rank').innerText = rank;
+            document.getElementById('disp-bal').innerText = Math.floor(balance);
+            document.getElementById('disp-helpers').innerText = helpers;
+            
+            let rank = "Котёнок";
+            if(balance > 100) rank = "Игривый кот";
+            if(balance > 1000) rank = "Кот-барон";
+            if(balance > 10000) rank = "Котик!"; // Самый лучший ранг
+            
+            // Если ранг изменен через чит-меню, используем его
+            const finalRank = forcedRank || rank;
+            document.getElementById('disp-rank').innerText = finalRank;
         }
 
         function saveData() {
             if(!user) return;
             db.ref('users/' + user).update({
                 balance: balance,
+                helpers: helpers,
                 rank: document.getElementById('disp-rank').innerText,
-                lastActive: Date.now()
+                lastSeen: Date.now()
             });
         }
+
+        // Авто-доход
+        setInterval(() => {
+            if(helpers > 0) {
+                balance += (helpers / 10); // Обновляем плавно
+                updateUI();
+                if(Math.random() > 0.95) saveData(); // Сохраняем не каждую секунду, чтобы не грузить базу
+            }
+        }, 100);
 
         function addLog(msg) {
             const l = document.getElementById('logs');
@@ -147,18 +197,22 @@
             l.scrollTop = l.scrollHeight;
         }
 
-        // ЧИТЫ
+        // Кнопки интерфейса
+        function toggleShop() { 
+            const s = document.getElementById('shop-modal');
+            s.style.display = (s.style.display === 'block') ? 'none' : 'block'; 
+        }
+
         function openCheat() { document.getElementById('cheat-menu').style.display = 'block'; }
         function closeCheat() { document.getElementById('cheat-menu').style.display = 'none'; }
-        function addMoney(amt) { balance += amt; updateUI(); saveData(); addLog("Чит: баланс изменен на " + amt); }
-        function wipeData() { if(confirm("Удалить всё?")) { db.ref('users/' + user).remove(); location.reload(); } }
+        function addMoney(amt) { balance += amt; updateUI(); saveData(); addLog("ЧИТ: Добавлено "+amt); }
+        function setRank(r) { forcedRank = r; updateUI(); saveData(); addLog("ЧИТ: Установлен ранг "+r); }
 
-        // ТЕМЫ
         function nextTheme() {
             document.body.classList.remove(themes[currentThemeIdx]);
             currentThemeIdx = (currentThemeIdx + 1) % themes.length;
             document.body.classList.add(themes[currentThemeIdx]);
-            addLog("Тема изменена");
+            addLog("Тема: " + themes[currentThemeIdx]);
         }
     </script>
 </body>
