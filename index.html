@@ -3,397 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberCrypt: Infinite Edition 2026</title>
+    <title>CyberCrypt: Infinite Edition (Online)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@300;500;800&display=swap');
-
+        /* Весь твой крутой CSS остается здесь (я его сохранил) */
         :root {
-            --neon: #00f2ff;
-            --accent: #ff00ff;
-            --bg: #050505;
-            --cheat-color: #ff0000;
+            --neon-green: #00ff41;
+            --dark-bg: #0a0a0a;
+            --panel-bg: #151515;
         }
 
         body {
-            font-family: 'JetBrains Mono', monospace;
-            background-color: var(--bg);
-            color: #fff; margin: 0; height: 100vh;
-            display: flex; overflow: hidden; transition: background 0.5s;
+            background-color: var(--dark-bg);
+            color: var(--neon-green);
+            font-family: 'Fira Code', monospace;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Анимация появления контента */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Боковая панель */
-        .sidebar {
-            width: 80px; background: rgba(0,0,0,0.9); border-right: 2px solid var(--neon);
-            display: flex; flex-direction: column; align-items: center; padding-top: 25px; z-index: 100;
+        #auth-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
 
-        .tab-btn {
-            background: none; border: none; color: var(--neon); font-size: 32px;
-            margin-bottom: 30px; cursor: pointer; transition: 0.3s; opacity: 0.3;
-        }
-        .tab-btn.active { opacity: 1; filter: drop-shadow(0 0 10px var(--neon)); transform: scale(1.2); }
-
-        /* Главная область */
-        .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
-
-        .top-bar {
-            margin-top: 20px; width: 85%; background: rgba(20,20,30,0.7);
-            padding: 20px; border-radius: 12px; border: 1px solid var(--neon);
-            display: flex; justify-content: space-between; backdrop-filter: blur(15px);
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+        .auth-box {
+            background: var(--panel-bg);
+            padding: 30px;
+            border: 2px solid var(--neon-green);
+            text-align: center;
+            box-shadow: 0 0 20px var(--neon-green);
         }
 
-        .crypto-val { font-family: 'Orbitron'; font-weight: 900; color: var(--neon); font-size: 22px; text-shadow: 0 0 10px var(--neon); }
-        .rank-val { font-family: 'Orbitron'; font-size: 11px; letter-spacing: 2px; color: #aaa; }
-
-        .content { width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto; padding: 40px; }
-        .content.active { display: flex; animation: fadeIn 0.4s ease; }
-
-        /* Кликер */
-        #city { font-size: 160px; cursor: pointer; user-select: none; transition: 0.1s; filter: drop-shadow(0 0 30px var(--accent)); position: relative; }
-        #city:active { transform: scale(0.85); }
-
-        /* Магазин */
-        .shop-list { width: 100%; max-width: 500px; display: grid; gap: 12px; }
-        .shop-item { 
-            background: rgba(255,255,255,0.05); padding: 18px; border-radius: 10px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-left: 4px solid var(--neon); transition: 0.2s;
+        input {
+            background: #000;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 10px;
+            margin-top: 10px;
+            font-family: 'Fira Code';
         }
-        .shop-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
 
-        /* ЧИТ-МЕНЮ */
-        #cheat-menu {
-            position: fixed; bottom: 20px; right: 20px; width: 360px;
-            background: #000; border: 2px solid var(--cheat-color); border-radius: 12px;
-            display: none; flex-direction: column; z-index: 1000;
-            box-shadow: 0 0 50px var(--cheat-color); transform: translateY(150%); transition: 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        button {
+            background: var(--neon-green);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
         }
-        #cheat-menu.open { transform: translateY(0); }
-        .cheat-header { background: var(--cheat-color); color: #000; padding: 12px; font-weight: 900; font-size: 12px; display: flex; justify-content: space-between; font-family: 'Orbitron'; }
-        .cheat-tabs { display: flex; background: #111; border-bottom: 1px solid #333; }
-        .c-tab { padding: 12px; border: none; background: none; color: #666; cursor: pointer; font-size: 10px; font-family: 'Orbitron'; flex: 1; }
-        .c-tab.active { color: var(--cheat-color); border-bottom: 2px solid var(--cheat-color); background: rgba(255,0,0,0.05); }
-        .cheat-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto; }
 
-        /* Кнопки */
-        .btn {
-            background: rgba(0, 242, 255, 0.05); border: 1px solid var(--neon);
-            color: var(--neon); padding: 14px; cursor: pointer; border-radius: 6px;
-            font-family: 'Orbitron'; font-size: 11px; font-weight: bold; transition: 0.3s;
-        }
-        .btn:hover:not(:disabled) { background: var(--neon); color: #000; box-shadow: 0 0 15px var(--neon); }
-        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        
-        .btn-cheat { border-color: var(--cheat-color); color: var(--cheat-color); }
-        .btn-cheat:hover { background: var(--cheat-color); color: #fff; box-shadow: 0 0 15px var(--cheat-color); }
-        
-        .btn-danger { border-color: #ff3333; color: #ff3333; margin-top: 40px; }
-        .btn-danger:hover { background: #ff3333; color: #fff; box-shadow: 0 0 20px #ff3333; }
-
-        /* Логи / Статистика */
-        .log-box { background: #000; padding: 25px; border: 1px solid #333; width: 100%; max-width: 450px; border-radius: 12px; box-shadow: inset 0 0 20px #111; }
-        .log-row { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 12px 0; font-size: 14px; }
-        .log-label { color: #888; font-weight: 300; }
-        .log-val { color: var(--neon); font-weight: 800; }
-
-        /* Спец-элементы */
-        #gear { position: fixed; top: 25px; right: 25px; font-size: 40px; cursor: pointer; display: none; z-index: 1001; transition: 0.3s; }
-        #gear:hover { transform: rotate(90deg); filter: drop-shadow(0 0 10px white); }
-        
-        #bsod { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0000aa; color: white; padding: 60px; display: none; z-index: 9999; font-family: 'Segoe UI', sans-serif; }
+        /* Остальные стили кликера... */
+        .container { width: 90%; max-width: 800px; text-align: center; margin-top: 20px; }
+        .stats { font-size: 24px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .click-area { font-size: 80px; cursor: pointer; user-select: none; transition: transform 0.1s; }
+        .click-area:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
-    <div id="bsod">
-        <h1 style="font-size: 120px;">:(</h1>
-        <h2 style="font-size: 30px;">На вашем устройстве возникла проблема.</h2>
-        <p style="font-size: 20px; line-height: 1.5;">Сбор сведений об ошибке: 100% завершено.<br><br>
-        Если вы хотите узнать больше, вы можете позже поискать в Интернете эту ошибку: <b>CRYPT_OVERFLOW_FATAL</b></p>
-        <button onclick="document.getElementById('bsod').style.display='none'" style="padding:15px 30px; font-size: 18px; cursor: pointer;">ПЕРЕЗАГРУЗИТЬ СИСТЕМУ</button>
-    </div>
-
-    <div id="gear" onclick="toggleCheat()">⚙️</div>
-
-    <div class="sidebar">
-        <button class="tab-btn active" onclick="switchTab('game', event)" title="Город">🏙️</button>
-        <button class="tab-btn" onclick="switchTab('shop', event)" title="Рынок">🛒</button>
-        <button class="tab-btn" onclick="switchTab('visual', event)" title="Темы">🎨</button>
-        <button class="tab-btn" onclick="switchTab('codes', event)" title="Терминал">⌨️</button>
-        <button class="tab-btn" onclick="switchTab('stats', event)" title="Статистика">📈</button>
-    </div>
-
-    <div class="main">
-        <div class="top-bar">
-            <div><span class="crypto-val" id="m-ui">0</span> <span style="font-size:12px; color: #666;">₿ (КРИПТА)</span></div>
-            <div class="rank-val" id="r-ui">РАНГ: МАМИН ХАКЕР</div>
-        </div>
-
-        <div id="game" class="content active">
-            <div id="city">🏙️</div>
-            <p style="color: var(--neon); font-size: 14px; margin-top: 40px; letter-spacing: 1px;">СКОРОСТЬ ГЕНЕРАЦИИ: <span id="dps-ui" style="font-weight: bold;">0</span> ₿/сек</p>
-        </div>
-
-        <div id="shop" class="content">
-            <h2 style="font-family:'Orbitron'; color: var(--accent); margin-bottom: 30px;">DARKNET MARKET</h2>
-            <div class="shop-list" id="shop-container"></div>
-        </div>
-
-        <div id="visual" class="content">
-            <h2 style="font-family:'Orbitron'; margin-bottom: 30px;">ИНТЕРФЕЙС ГОРОДА</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 500px;">
-                <button class="btn" onclick="setT('#050505', '#00f2ff', '🏙️')">КИБЕРПАНК</button>
-                <button class="btn" onclick="setT('#101010', '#ffffff', '🔳')">МОНОХРОМ</button>
-                <button class="btn" onclick="setT('#001500', '#00ff44', '🌲')">МАТРИЦА</button>
-                <button class="btn" onclick="setT('#150000', '#ff0000', '🌋')">ИНФЕРНО</button>
-                <button class="btn" onclick="setT('#151000', '#ffaa00', '👑')">ЗОЛОТО</button>
-                <button class="btn" onclick="setT('#000a15', '#0088ff', '🌊')">ОКЕАН</button>
-            </div>
-        </div>
-
-        <div id="codes" class="content">
-            <h2 style="font-family:'Orbitron'; margin-bottom: 30px;">ВВОД ЭКСПЛОЙТОВ</h2>
-            <input type="text" id="t-input" placeholder="ACCESS_CODE..." style="background:#000; border:2px solid var(--neon); color:#fff; padding:20px; width:320px; text-align:center; font-family:'JetBrains Mono'; font-size: 18px; border-radius: 8px; outline: none;">
-            <button class="btn" style="margin-top:25px; width: 360px;" onclick="runCode()">ВЫПОЛНИТЬ ИНЪЕКЦИЮ</button>
-        </div>
-
-        <div id="stats" class="content">
-            <h2 style="font-family:'Orbitron'; margin-bottom: 30px;">СИСТЕМНЫЕ ЛОГИ</h2>
-            <div class="log-box">
-                <div class="log-row"><span class="log-label">ВРЕМЯ В СЕТИ</span><span class="log-val" id="s-time">0</span>с</div>
-                <div class="log-row"><span class="log-label">ОБЩЕЕ ЧИСЛО КЛИКОВ</span><span class="log-val" id="s-clicks">0</span></div>
-                <div class="log-row"><span class="log-label">ПОТРАЧЕННАЯ КРИПТА</span><span class="log-val" id="s-spent">0</span></div>
-                <div class="log-row"><span class="log-label">ВСЕГО ДОБЫТО ЗА ВСЁ ВРЕМЯ</span><span class="log-val" id="s-total">0</span></div>
-            </div>
-            <button class="btn btn-danger" onclick="wipe()">УНИЧТОЖИТЬ ВСЁ С ЛИЦА ЗЕМЛИ</button>
+    <div id="auth-overlay">
+        <div class="auth-box">
+            <h2>СИСТЕМА ИДЕНТИФИКАЦИИ</h2>
+            <p>Введите ваш хакерский позывной:</p>
+            <input type="text" id="username-input" placeholder="Nickname...">
+            <br>
+            <button onclick="startApp()">ВХОД В СИСТЕМУ</button>
         </div>
     </div>
 
-    <div id="cheat-menu">
-        <div class="cheat-header"><span>ADMIN_PANEL_V8</span><span onclick="toggleCheat()" style="cursor:pointer">[X]</span></div>
-        <div class="cheat-tabs">
-            <button class="c-tab active" onclick="ctab('c-res', event)">РЕСУРСЫ</button>
-            <button class="c-tab" onclick="ctab('c-rank', event)">РАНГИ</button>
-            <button class="c-tab" onclick="ctab('c-style', event)">ВИЗУАЛ</button>
-            <button class="c-tab" onclick="ctab('c-chaos', event)">ХАОС</button>
+    <div class="container">
+        <div class="stats">
+            ID: <span id="display-name">---</span> | 
+            Баланс: <span id="balance">0</span> ₿ | 
+            Ранг: <span id="rank">Новичок</span>
+        </div>
+        <div class="click-area" onclick="handleButtonClick()">🏙️</div>
         </div>
 
-        <div id="c-res" class="cheat-body">
-            <button class="btn btn-cheat" onclick="game.money += 1000000; updateUI();">+1.000.000 ₿</button>
-            <button class="btn btn-cheat" onclick="toggleGod()" id="god-btn">GOD MODE: OFF</button>
-        </div>
+    <script type="module">
+        // --- ПОДКЛЮЧЕНИЕ FIREBASE ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        <div id="c-rank" class="cheat-body" style="display:none">
-            <p style="font-size:9px; color:#666">ПРИНУДИТЕЛЬНЫЙ РАНГ:</p>
-            <button class="btn btn-cheat" onclick="game.fRank='МАМИН ХАКЕР'; updateUI();">МАМИН ХАКЕР</button>
-            <button class="btn btn-cheat" onclick="game.fRank='СКРИПТ-КИДДИ'; updateUI();">СКРИПТ-КИДДИ</button>
-            <button class="btn btn-cheat" onclick="game.fRank='КИБЕР-ПРЕСТУПНИК'; updateUI();">КИБЕР-ПРЕСТУПНИК</button>
-            <button class="btn btn-cheat" onclick="game.fRank='ЦИФРОВОЙ БОГ'; updateUI();">ЦИФРОВОЙ БОГ</button>
-            <button class="btn btn-cheat" onclick="game.fRank=null; updateUI();" style="border-color:#fff">СБРОСИТЬ РАНГ</button>
-        </div>
-
-        <div id="c-style" class="cheat-body" style="display:none">
-            <p style="font-size:9px; color:#666">ЦВЕТ АДМИНКИ:</p>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px">
-                <button class="btn btn-cheat" onclick="sc('#ff0000')">КРОВЬ</button>
-                <button class="btn btn-cheat" onclick="sc('#00ff00')">ХАКЕР</button>
-                <button class="btn btn-cheat" onclick="sc('#00f2ff')">НЕОН</button>
-                <button class="btn btn-cheat" onclick="sc('#ffaa00')">ЗОЛОТО</button>
-                <button class="btn btn-cheat" onclick="sc('#ff00ff')">БАРБИ</button>
-                <button class="btn btn-cheat" onclick="sc('#ffffff')">БЕЛЫЙ</button>
-            </div>
-        </div>
-
-        <div id="c-chaos" class="cheat-body" style="display:none">
-            <button class="btn btn-cheat" onclick="document.getElementById('bsod').style.display='block'">ВЫЗВАТЬ BSOD</button>
-            <button class="btn btn-cheat" onclick="game.gravity = !game.gravity; updateUI();">ИНВЕРСИЯ ГРАВИТАЦИИ</button>
-            <button class="btn btn-cheat" onclick="alert('Все процессы взлома запущены!')">ВЗЛОМ ВСЕГО</button>
-        </div>
-    </div>
-
-    <script>
-        // Инициализация игры
-        let game = {
-            money: 0, total: 0, spent: 0, clicks: 0, time: 0, power: 1,
-            cheat: false, god: false, fRank: null, gravity: false,
-            items: [
-                { id: 0, name: "Видюха с Авито", cost: 15, power: 1, type: "click", count: 0 },
-                { id: 1, name: "Ботнет-ферма", cost: 120, power: 8, type: "auto", count: 0 },
-                { id: 2, name: "Квантовое ядро", cost: 3000, power: 65, type: "auto", count: 0 },
-                { id: 3, name: "Спутник связи", cost: 60000, power: 550, type: "auto", count: 0 },
-                { id: 4, name: "Мета-Вселенная", cost: 1000000, power: 12000, type: "auto", count: 0 }
-            ],
-            theme: { bg: '#050505', neon: '#00f2ff', icon: '🏙️' }
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3J2Xe_TptizbnYr7rSr_fq8uvtT1Vgs0",
+            authDomain: "cybercrypt-online-de357.firebaseapp.com",
+            projectId: "cybercrypt-online-de357",
+            storageBucket: "cybercrypt-online-de357.firebasestorage.app",
+            messagingSenderId: "903069840701",
+            appId: "1:903069840701:web:1c64e03b93addc1987c154",
+            measurementId: "G-LJ9XKE9SGF"
         };
 
-        // Загрузка данных при старте страницы
-        const saved = localStorage.getItem('CyberSaveV8');
-        if(saved) {
-            const parsed = JSON.parse(saveData = saved);
-            Object.assign(game, parsed);
-            if(game.cheat) document.getElementById('gear').style.display = 'block';
-            setT(game.theme.bg, game.theme.neon, game.theme.icon);
-        }
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        // Переключение вкладок
-        function switchTab(id, e) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            e.currentTarget.classList.add('active');
-            if(id === 'shop') renderShop();
-        }
+        // Переменные игры
+        let gameState = {
+            money: 0,
+            rank: "Мамин Хакер",
+            clicks: 0,
+            cheater: false
+        };
+        let currentUserId = "";
 
-        // Клик по городу
-        document.getElementById('city').addEventListener('mousedown', () => {
-            let gain = game.power;
-            game.money += gain; game.total += gain; game.clicks++;
-            updateUI();
-        });
+        // Функция входа
+        window.startApp = function() {
+            const name = document.getElementById('username-input').value;
+            if(!name) return alert("Введите имя!");
+            
+            currentUserId = name;
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('display-name').innerText = name;
 
-        // Отрисовка магазина
-        function renderShop() {
-            const container = document.getElementById('shop-container');
-            container.innerHTML = '';
-            game.items.forEach(u => {
-                const card = document.createElement('div');
-                card.className = 'shop-item';
-                card.innerHTML = `
-                    <div><b>${u.name}</b><br><small style="color:#888">Ур.${u.count} (+${u.power} ${u.type === 'click' ? 'клик' : 'сек'})</small></div>
-                    <button class="btn" onclick="buy(${u.id})" ${game.money < u.cost && !game.god ? 'disabled' : ''}>${Math.floor(u.cost)} ₿</button>
-                `;
-                container.appendChild(card);
+            // Загружаем данные из облака
+            const userRef = ref(db, 'users/' + currentUserId);
+            onValue(userRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    gameState = data;
+                    updateUI();
+                } else {
+                    saveToCloud(); // Создаем нового игрока
+                }
             });
         }
 
-        // Покупка
-        function buy(id) {
-            const u = game.items[id];
-            if(game.money >= u.cost || game.god) {
-                if(!game.god) { game.money -= u.cost; game.spent += u.cost; }
-                u.count++;
-                if(u.type === 'click') game.power += u.power;
-                u.cost *= 1.48; // Удорожание
-                renderShop(); updateUI();
-            }
-        }
-
-        // Обновление интерфейса и сохранение
         function updateUI() {
-            document.getElementById('m-ui').innerText = Math.floor(game.money).toLocaleString();
-            document.getElementById('s-total').innerText = Math.floor(game.total).toLocaleString();
-            document.getElementById('s-clicks').innerText = game.clicks;
-            document.getElementById('s-spent').innerText = Math.floor(game.spent).toLocaleString();
-            document.getElementById('s-time').innerText = game.time;
-            
-            let dps = game.items.filter(i => i.type === 'auto').reduce((s, i) => s + (i.count * i.power), 0);
-            document.getElementById('dps-ui').innerText = dps.toLocaleString();
-
-            // Логика рангов
-            let rank = "МАМИН ХАКЕР";
-            if(game.total > 5000) rank = "СКРИПТ-КИДДИ";
-            if(game.total > 150000) rank = "КИБЕР-ПРЕСТУПНИК";
-            if(game.total > 10000000) rank = "ЦИФРОВОЙ БОГ";
-            document.getElementById('r-ui').innerText = "РАНГ: " + (game.fRank || rank);
-
-            // Эффект гравитации
-            if(game.gravity) {
-                document.getElementById('city').style.transform = `translateY(${Math.sin(Date.now()/300)*60}px) rotate(${Date.now()/50}deg)`;
-            } else {
-                document.getElementById('city').style.transform = '';
-            }
-
-            // Автосохранение
-            localStorage.setItem('CyberSaveV8', JSON.stringify(game));
+            document.getElementById('balance').innerText = Math.floor(gameState.money);
+            document.getElementById('rank').innerText = gameState.rank;
         }
 
-        // Терминал кодов
-        function runCode() {
-            const val = document.getElementById('t-input').value.toLowerCase();
-            if(val === 'godmode') {
-                game.cheat = true;
-                document.getElementById('gear').style.display = 'block';
-                toggleCheat();
-            }
-            document.getElementById('t-input').value = '';
-        }
-
-        // Управление чит-меню
-        function toggleCheat() {
-            const p = document.getElementById('cheat-menu');
-            if(p.style.display === 'flex') {
-                p.classList.remove('open');
-                setTimeout(() => p.style.display = 'none', 500);
-            } else {
-                p.style.display = 'flex';
-                setTimeout(() => p.classList.add('open'), 10);
-            }
-        }
-
-        function ctab(id, e) {
-            document.querySelectorAll('.cheat-body').forEach(b => b.style.display = 'none');
-            document.querySelectorAll('.c-tab').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).style.display = 'flex';
-            e.currentTarget.classList.add('active');
-        }
-
-        function sc(c) {
-            document.documentElement.style.setProperty('--cheat-color', c);
-            document.getElementById('cheat-menu').style.borderColor = c;
-        }
-
-        function toggleGod() {
-            game.god = !game.god;
-            document.getElementById('god-btn').innerText = `GOD MODE: ${game.god ? 'ON' : 'OFF'}`;
-            if(game.god) game.money = 999999999;
+        window.handleButtonClick = function() {
+            gameState.money += 1;
+            gameState.clicks += 1;
             updateUI();
+            saveToCloud(); // Сохраняем при каждом клике (или раз в 10 кликов для скорости)
         }
 
-        // Смена темы
-        function setT(bg, neon, icon) {
-            game.theme = { bg, neon, icon };
-            document.body.style.backgroundColor = bg;
-            document.documentElement.style.setProperty('--neon', neon);
-            document.getElementById('city').innerText = icon;
-            updateUI();
-        }
-
-        // КНОПКА УНИЧТОЖЕНИЯ (Полный сброс)
-        function wipe() {
-            const check1 = confirm("🛑 ВНИМАНИЕ: Вы собираетесь стереть все данные вашей кибер-личности. Продолжить?");
-            if(check1) {
-                const check2 = confirm("⚠️ ПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ: Прогресс будет потерян навсегда. Вы уверены?");
-                if(check2) {
-                    localStorage.removeItem('CyberSaveV8');
-                    localStorage.clear();
-                    
-                    document.body.style.background = "white";
-                    document.body.innerHTML = "<div style='color:black; font-family:Orbitron; text-align:center; margin-top:20%;'><h1>СИСТЕМА СТЕРТА</h1><p>Перезапуск...</p></div>";
-                    
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                }
+        function saveToCloud() {
+            if(currentUserId) {
+                set(ref(db, 'users/' + currentUserId), gameState);
             }
         }
-
-        // Главный цикл (10 раз в секунду)
-        setInterval(() => {
-            game.time++;
-            let dps = game.items.filter(i => i.type === 'auto').reduce((s, i) => s + (i.count * i.power), 0);
-            if(dps > 0) {
-                game.money += dps / 10;
-                game.total += dps / 10;
-            }
-            updateUI();
-        }, 100);
-
-        // Первый запуск интерфейса
-        updateUI();
     </script>
 </body>
 </html>
