@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cat Empire: Ultimate Clicker</title>
+    <title>Cat Empire: Secret Admin Edition</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
@@ -13,34 +13,36 @@
         .theme-coffee { --accent: #a67c52; --bg: #fdf5e6; --text: #4b3621; --panel: #fffaf0; }
 
         body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Comfortaa', cursive; display: flex; flex-direction: column; height: 100vh; transition: 0.5s; overflow: hidden; }
-        
-        /* Верхняя панель */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: var(--panel); border-bottom: 3px solid var(--accent); z-index: 100; }
-        .stats { background: rgba(0,0,0,0.1); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--accent); }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background: var(--panel); border-bottom: 3px solid var(--accent); }
 
-        .container { display: flex; flex-grow: 1; overflow: hidden; }
-        
-        /* Магазин СЛЕВА */
+        .container { display: flex; flex-grow: 1; overflow: hidden; position: relative; }
         .shop-sidebar { width: 300px; background: var(--panel); border-right: 2px solid var(--accent); padding: 20px; overflow-y: auto; }
-        .shop-item { background: var(--bg); border: 1px solid var(--accent); border-radius: 15px; padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; transition: 0.2s; }
-        .shop-item:hover { transform: scale(1.02); }
+        .shop-item { background: var(--bg); border: 1px solid var(--accent); border-radius: 15px; padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; }
 
-        /* Игровая зона */
-        .game-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .main-target { width: 250px; height: 250px; cursor: pointer; transition: 0.1s; filter: drop-shadow(0 10px 25px rgba(0,0,0,0.2)); user-select: none; }
+        .game-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .main-target { width: 240px; height: 240px; cursor: pointer; transition: 0.1s; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2)); }
         .main-target:active { transform: scale(0.92); }
 
-        /* Темы СПРАВА */
         .theme-sidebar { width: 150px; background: var(--panel); border-left: 2px solid var(--accent); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .theme-btn { padding: 10px; border-radius: 10px; border: 2px solid var(--accent); cursor: pointer; text-align: center; font-size: 0.75em; font-weight: bold; background: var(--panel); }
+        .theme-btn { padding: 10px; border-radius: 10px; border: 2px solid var(--accent); cursor: pointer; text-align: center; font-size: 0.75em; font-weight: bold; }
 
-        /* Чит-меню */
-        #cheat-menu { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel); padding: 25px; border-radius: 30px; border: 4px solid #ff4d4d; z-index: 3000; width: 420px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-        .cheat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        /* СЕКРЕТНАЯ КНОПКА (Серый кружок) */
+        #secret-dot {
+            position: fixed; bottom: 15px; right: 15px; width: 15px; height: 15px;
+            background: #555; border-radius: 50%; cursor: pointer; opacity: 0.3; transition: 0.3s; z-index: 5000;
+        }
+        #secret-dot:hover { opacity: 1; transform: scale(1.2); }
+
+        /* ЧИТ-МЕНЮ СЛЕВА СНИЗУ */
+        #cheat-menu { 
+            display: none; position: fixed; bottom: 20px; left: 20px; 
+            background: var(--panel); padding: 20px; border-radius: 20px; 
+            border: 3px solid #ff4d4d; z-index: 3000; width: 320px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .cheat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         
-        .log-box { width: 90%; height: 60px; background: rgba(0,0,0,0.1); margin-top: 15px; border-radius: 10px; font-size: 0.7em; overflow-y: auto; padding: 8px; text-align: left; font-family: monospace; }
-        .btn { background: var(--accent); border: none; color: white; padding: 10px; border-radius: 12px; cursor: pointer; font-family: inherit; font-weight: bold; }
-        
+        .btn { background: var(--accent); border: none; color: white; padding: 8px; border-radius: 10px; cursor: pointer; font-family: inherit; font-weight: bold; font-size: 0.75em; }
         #auth { position: fixed; inset: 0; background: #121212; display: flex; justify-content: center; align-items: center; z-index: 4000; color: white; }
     </style>
 </head>
@@ -48,57 +50,52 @@
 
     <div id="auth">
         <div style="background: #1e1e1e; padding: 50px; border-radius: 40px; border: 3px solid #bb86fc; text-align: center;">
-            <h2 style="color: #bb86fc">Вход в Кото-Империю</h2>
+            <h2 style="color: #bb86fc">Вход в Систему</h2>
             <input type="text" id="nick" placeholder="Твой ник..." style="padding: 12px; border-radius: 10px; border: none; margin-bottom: 20px; text-align: center; width: 200px;"><br>
-            <button class="btn" style="background: #bb86fc; width: 220px;" onclick="login()">УСТАНОВИТЬ СВЯЗЬ</button>
+            <button class="btn" style="background: #bb86fc; width: 200px;" onclick="login()">ВОЙТИ</button>
         </div>
     </div>
 
     <div class="top-bar">
         <div class="stats">☕️ <span id="disp-bal">0</span> | <span id="disp-rank">Котёнок</span></div>
-        <div style="cursor: pointer; font-size: 0.85em; opacity: 0.8;" onclick="openCheat()">
-            ID: <span id="disp-id">---</span>
-        </div>
+        <div style="font-size: 0.85em; opacity: 0.6;">ID: <span id="disp-id">---</span></div>
     </div>
 
     <div class="container">
         <div class="shop-sidebar">
-            <h3 style="text-align:center; font-size: 1.1em; color: var(--accent);">🐾 Кот-Маркет</h3>
+            <h3 style="text-align:center; color: var(--accent);">🛒 Маркет</h3>
             <div class="shop-item"><span>Коробка (+1/с)</span><button class="btn" onclick="buy(1, 25)">25</button></div>
             <div class="shop-item"><span>Валерьянка (+5/с)</span><button class="btn" onclick="buy(5, 150)">150</button></div>
             <div class="shop-item"><span>Лазер (+20/с)</span><button class="btn" onclick="buy(20, 800)">800</button></div>
             <div class="shop-item"><span>Дрон (+150/с)</span><button class="btn" onclick="buy(150, 5000)">5k</button></div>
-            <div class="shop-item"><span>Сервер (+1к/с)</span><button class="btn" onclick="buy(1000, 50000)">50k</button></div>
         </div>
 
         <div class="game-area">
             <img src="https://cdn-icons-png.flaticon.com/512/924/924514.png" class="main-target" onclick="doClick()">
-            <p style="margin-top:20px;">Помощников: <span id="disp-helpers">0</span> | Клик: x<span id="disp-click">1</span></p>
-            <div class="log-box" id="logs">> Соединение установлено...</div>
+            <p>Помощников: <span id="disp-helpers">0</span> | Клик: x<span id="disp-click">1</span></p>
         </div>
 
         <div class="theme-sidebar">
-            <h4 style="text-align:center; margin:0; font-size:0.8em;">ПАЛИТРА</h4>
-            <div class="theme-btn" style="background:#fff5f7; color:#5d4037;" onclick="setTheme('theme-main')">Мило</div>
-            <div class="theme-btn" style="background:#121212; color:#e0e0e0;" onclick="setTheme('theme-dark')">Тьма</div>
-            <div class="theme-btn" style="background:#fdf5e6; color:#4b3621;" onclick="setTheme('theme-coffee')">Кофе</div>
+            <h4 style="text-align:center; margin:0; font-size:0.8em;">ТЕМЫ</h4>
+            <div class="theme-btn" onclick="setTheme('theme-main')">Мило</div>
+            <div class="theme-btn" onclick="setTheme('theme-dark')">Тьма</div>
+            <div class="theme-btn" onclick="setTheme('theme-coffee')">Кофе</div>
         </div>
     </div>
 
+    <div id="secret-dot" onclick="openCheat()"></div>
+
     <div id="cheat-menu">
-        <h2 style="color: #ff4d4d; margin: 0;">🛠 ADMIN PANEL</h2>
+        <div style="display:flex; justify-content: space-between; align-items:center;">
+            <strong style="color: #ff4d4d; font-size:0.9em;">🛠 DEBUG PANEL</strong>
+            <span onclick="closeCheat()" style="cursor:pointer; font-size:1.2em;">×</span>
+        </div>
         <div class="cheat-grid">
             <button class="btn" onclick="addMoney(1000000)">+1M ☕️</button>
-            <button class="btn" onclick="balance = 0; updateUI();">Обнулить ☕️</button>
-            <button class="btn" onclick="clickForce = 500; updateUI();">Клик x500</button>
+            <button class="btn" onclick="clickForce = 1000; updateUI(); setCheatStatus();">Клик x1000</button>
             <button class="btn" onclick="setRank('Котик!')">Ранг: Котик!</button>
-            <button class="btn" onclick="helpers += 5000; updateUI();">Армия помощников</button>
-            <button class="btn" onclick="location.reload()">Перезагрузка</button>
+            <button class="btn" onclick="deleteAccount()" style="background:#ff4d4d;">УДАЛИТЬ АКК</button>
         </div>
-        <hr style="border: 1px solid #444; margin: 15px 0;">
-        <button class="btn" style="background: #ff4d4d; width: 100%;" onclick="deleteAccount()">💥 УДАЛИТЬ АККАУНТ</button>
-        <br><br>
-        <button class="btn" style="background:#555; width: 100%;" onclick="closeCheat()">ЗАКРЫТЬ</button>
     </div>
 
     <script>
@@ -114,7 +111,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let user = ""; let balance = 0; let helpers = 0; let clickForce = 1; let forcedRank = "";
+        let user = ""; let balance = 0; let helpers = 0; let clickForce = 1; let forcedRank = ""; let isCheater = false;
 
         function login() {
             user = document.getElementById('nick').value.trim();
@@ -130,6 +127,7 @@
                     helpers = data.helpers || 0;
                     clickForce = data.clickForce || 1;
                     forcedRank = data.rank || "";
+                    isCheater = data.cheat || false;
                     updateUI();
                 } else { saveData(); }
             });
@@ -140,15 +138,8 @@
             if(saved) { document.getElementById('nick').value = saved; login(); }
         }
 
-        function doClick() { 
-            balance += clickForce; 
-            updateUI(); 
-            addLog(`+${clickForce} кофе`);
-        }
-        
-        function buy(p, cost) {
-            if(balance >= cost) { balance -= cost; helpers += p; updateUI(); saveData(); }
-        }
+        function doClick() { balance += clickForce; updateUI(); }
+        function buy(p, cost) { if(balance >= cost) { balance -= cost; helpers += p; updateUI(); saveData(); } }
 
         function updateUI() {
             document.getElementById('disp-bal').innerText = Math.floor(balance);
@@ -158,33 +149,28 @@
         }
 
         function saveData() {
-            if(user) db.ref('users/' + user).set({ balance, helpers, clickForce, rank: document.getElementById('disp-rank').innerText });
+            if(user) db.ref('users/' + user).update({ balance, helpers, clickForce, rank: document.getElementById('disp-rank').innerText, cheat: isCheater });
         }
 
+        function setCheatStatus() { isCheater = true; saveData(); }
+
         function deleteAccount() {
-            if(confirm("Удалить аккаунт навсегда?")) {
-                db.ref('users/' + user).remove().then(() => {
-                    localStorage.removeItem('lastUser');
-                    location.reload();
-                });
+            if(confirm("Удалить аккаунт?")) {
+                db.ref('users/' + user).remove().then(() => { localStorage.removeItem('lastUser'); location.reload(); });
             }
         }
 
-        // Авто-доход и авто-сохранение каждые 2 секунды
         setInterval(() => { if(helpers > 0) { balance += (helpers/10); updateUI(); } }, 100);
-        setInterval(() => { saveData(); }, 2000);
-
-        function addLog(m) { 
-            const l = document.getElementById('logs'); 
-            l.innerHTML = `<div>> ${m}</div>` + l.innerHTML; 
-            if(l.children.length > 5) l.removeChild(l.lastChild);
-        }
+        setInterval(() => { saveData(); }, 5000);
 
         function setTheme(t) { document.body.className = t; }
-        function openCheat() { document.getElementById('cheat-menu').style.display = 'block'; }
+        function openCheat() { 
+            document.getElementById('cheat-menu').style.display = 'block'; 
+            setCheatStatus(); // Как только открыл — ты в списке "читеров"
+        }
         function closeCheat() { document.getElementById('cheat-menu').style.display = 'none'; }
-        function addMoney(a) { balance += a; updateUI(); saveData(); }
-        function setRank(r) { forcedRank = r; updateUI(); saveData(); }
+        function addMoney(a) { balance += a; setCheatStatus(); updateUI(); }
+        function setRank(r) { forcedRank = r; setCheatStatus(); updateUI(); }
     </script>
 </body>
 </html>
